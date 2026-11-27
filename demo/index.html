@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CausalFunnel Tracking Demo - Standalone Webpage</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #f8fafc;
+      color: #1e293b;
+      line-height: 1.5;
+      padding-bottom: 80px;
+    }
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .brand {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #0284c7;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .badge {
+      font-size: 0.75rem;
+      background: #e0f2fe;
+      color: #0369a1;
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+      font-weight: 600;
+    }
+    .container {
+      max-width: 1100px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+    .hero {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #ffffff;
+      border-radius: 1rem;
+      padding: 3rem 2rem;
+      text-align: center;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+    }
+    .hero h1 { font-size: 2.25rem; margin-bottom: 0.75rem; }
+    .hero p { color: #94a3b8; max-width: 650px; margin: 0 auto 1.5rem; font-size: 1rem; }
+    .cta-btn {
+      display: inline-block;
+      background: #0284c7;
+      color: white;
+      font-weight: 600;
+      padding: 0.75rem 1.75rem;
+      border-radius: 0.5rem;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.2s;
+    }
+    .cta-btn:hover { background: #0369a1; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .card h3 { font-size: 1.15rem; margin-bottom: 0.5rem; color: #0f172a; }
+    .card p { color: #64748b; font-size: 0.875rem; margin-bottom: 1rem; }
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid #f1f5f9;
+      padding-top: 1rem;
+    }
+    .price { font-size: 1.25rem; font-weight: 700; color: #0f172a; }
+    .btn-secondary {
+      background: #f1f5f9;
+      color: #334155;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      border: 1px solid #cbd5e1;
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+    .btn-secondary:hover { background: #e2e8f0; }
+    .interactive-box {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .interactive-box h2 { font-size: 1.25rem; margin-bottom: 1rem; }
+    .test-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    .pill-btn {
+      padding: 0.5rem 1.25rem;
+      border-radius: 9999px;
+      border: 1px solid #cbd5e1;
+      background: white;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+    .pill-btn:hover { background: #f8fafc; border-color: #94a3b8; }
+    .log-panel {
+      background: #0f172a;
+      color: #38bdf8;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      font-family: monospace;
+      font-size: 0.8rem;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+    .status-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #1e293b;
+      color: white;
+      padding: 0.75rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      border-top: 1px solid #334155;
+      z-index: 100;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="brand">
+      <span>CausalFunnel</span>
+      <span class="badge">Live Tracking Sandbox</span>
+    </div>
+    <div>
+      <a href="http://localhost:3000" target="_blank" style="color: #0284c7; font-size: 0.875rem; font-weight: 600; text-decoration: none;">
+        Open Analytics Dashboard ↗
+      </a>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- Hero Banner -->
+    <section class="hero">
+      <h1>Experience Behavioral User Analytics</h1>
+      <p>
+        Every click and page view on this demo webpage is recorded by <code>tracker.js</code> and sent directly to the Node.js backend & MongoDB database.
+      </p>
+      <button id="hero-explore-btn" class="cta-btn" onclick="logAction('Hero CTA Clicked')">
+        Explore Collection
+      </button>
+    </section>
+
+    <!-- Interactive Testing Grid -->
+    <section class="interactive-box">
+      <h2>Interactive Tracking Area</h2>
+      <p style="color: #64748b; font-size: 0.875rem; margin-bottom: 1rem;">
+        Click various elements below to create coordinates for heatmap visualization:
+      </p>
+      <div class="test-buttons">
+        <button id="btn-subscribe" class="pill-btn" onclick="logAction('Subscribe clicked')">🔔 Subscribe to Updates</button>
+        <button id="btn-download" class="pill-btn" onclick="logAction('Download clicked')">📥 Download Catalog</button>
+        <button id="btn-share" class="pill-btn" onclick="logAction('Share clicked')">🔗 Share Page</button>
+        <button id="btn-discount" class="pill-btn" style="color: #ea580c; border-color: #fed7aa; background: #fff7ed;" onclick="logAction('Claim discount')">
+          🏷️ Claim 20% Discount
+        </button>
+        <button id="btn-reset-sess" class="pill-btn" style="color: #4f46e5; border-color: #c7d2fe; background: #eef2ff;" onclick="resetDemoSession()">
+          🔄 New Visitor Session
+        </button>
+      </div>
+
+      <div style="font-size: 0.75rem; font-weight: 600; color: #64748b; margin-bottom: 0.5rem;">
+        CLIENT-SIDE EVENT LOG:
+      </div>
+      <div id="event-log" class="log-panel">
+        <div>[System] Tracker script initialized. Ready to record interactions.</div>
+      </div>
+    </section>
+
+    <!-- Product Showcase -->
+    <div class="grid">
+      <div class="card">
+        <div>
+          <h3>Premium Noise-Cancelling Headphones</h3>
+          <p>Active noise isolation with 40-hour battery life and fast charging.</p>
+        </div>
+        <div class="card-footer">
+          <span class="price">$199.99</span>
+          <button id="buy-headphones" class="cta-btn" style="padding: 0.5rem 1rem; font-size: 0.875rem;" onclick="logAction('Add Headphones to Cart')">
+            Add to Cart
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div>
+          <h3>Smart Fitness Tracker Watch</h3>
+          <p>Continuous heart rate, sleep quality index, and built-in GPS.</p>
+        </div>
+        <div class="card-footer">
+          <span class="price">$249.00</span>
+          <button id="buy-smartwatch" class="cta-btn" style="padding: 0.5rem 1rem; font-size: 0.875rem;" onclick="logAction('Add Smartwatch to Cart')">
+            Add to Cart
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div>
+          <h3>Ergonomic Keyboard</h3>
+          <p>Split mechanical keyboard designed for maximum typing comfort.</p>
+        </div>
+        <div class="card-footer">
+          <span class="price">$149.50</span>
+          <button id="buy-keyboard" class="cta-btn" style="padding: 0.5rem 1rem; font-size: 0.875rem;" onclick="logAction('Add Keyboard to Cart')">
+            Add to Cart
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Floating Tracker Status -->
+  <div class="status-footer">
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <span style="height: 10px; width: 10px; border-radius: 50%; background: #4ade80; display: inline-block;"></span>
+      <span>Tracking Active: <code id="session-display" style="color: #38bdf8;">Loading session...</code></span>
+    </div>
+    <div style="font-size: 0.75rem; color: #94a3b8;">
+      Click anywhere on this page to test heatmap coordinate capturing
+    </div>
+  </div>
+
+  <!-- Embedded CausalFunnel Tracker Script -->
+  <script
+    src="http://localhost:5000/tracker.js"
+    data-endpoint="http://localhost:5000/api/events"
+  ></script>
+
+  <script>
+    function updateSessionDisplay() {
+      if (window.CausalTracker) {
+        document.getElementById('session-display').textContent = window.CausalTracker.getSessionId();
+      }
+    }
+
+    function logAction(msg) {
+      const log = document.getElementById('event-log');
+      const time = new Date().toLocaleTimeString();
+      const entry = document.createElement('div');
+      entry.textContent = `[${time}] ${msg}`;
+      log.appendChild(entry);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function resetDemoSession() {
+      if (window.CausalTracker && window.CausalTracker.resetSession) {
+        const newId = window.CausalTracker.resetSession();
+        updateSessionDisplay();
+        logAction('Session reset! New session ID: ' + newId);
+        window.CausalTracker.trackPageView();
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', function () {
+      setTimeout(updateSessionDisplay, 200);
+      document.addEventListener('click', function (e) {
+        const target = e.target.tagName.toLowerCase();
+        const text = (e.target.innerText || '').slice(0, 30);
+        logAction(`Click captured at (${e.pageX}px, ${e.pageY}px) on <${target}> "${text}"`);
+      }, true);
+    });
+  </script>
+</body>
+</html>
