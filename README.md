@@ -1,6 +1,6 @@
 # CausalFunnel User Analytics Platform
 
-[![CI Tests](https://github.com/your-username/causalfunnel-analytics/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/causalfunnel-analytics/actions/workflows/ci.yml)
+[![CI Tests](https://github.com/ayush200545/CasualFunnel/actions/workflows/ci.yml/badge.svg)](https://github.com/ayush200545/CasualFunnel/actions/workflows/ci.yml)
 [![Node.js Version](https://img.shields.io/badge/Node.js-v18%2B%20%7C%20v20%2B-green.svg)](https://nodejs.org/)
 [![Database](https://img.shields.io/badge/Database-MongoDB%20%2B%20Zero--Config%20Memory-brightgreen.svg)](https://www.mongodb.com/)
 [![Frontend](https://img.shields.io/badge/Frontend-React%2018%20%2B%20Vite%20%2B%20TailwindCSS-blue.svg)](https://react.dev/)
@@ -108,8 +108,8 @@ Directly tailored to CausalFunnel’s mission of understanding user intent and c
 
 ```bash
 # 1. Clone repository
-git clone <your-repo-url>
-cd causalfunnel-analytics
+git clone https://github.com/ayush200545/CasualFunnel.git
+cd CasualFunnel
 
 # 2. Install all dependencies (root, backend, and frontend)
 npm run install:all
