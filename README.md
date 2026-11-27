@@ -1,10 +1,14 @@
 # CausalFunnel User Analytics Platform
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-casualfunnel--two.vercel.app-brightgreen?style=flat&logo=vercel)](https://casualfunnel-two.vercel.app/)
 [![CI Tests](https://github.com/ayush200545/CasualFunnel/actions/workflows/ci.yml/badge.svg)](https://github.com/ayush200545/CasualFunnel/actions/workflows/ci.yml)
 [![Node.js Version](https://img.shields.io/badge/Node.js-v18%2B%20%7C%20v20%2B-green.svg)](https://nodejs.org/)
-[![Database](https://img.shields.io/badge/Database-MongoDB%20%2B%20Zero--Config%20Memory-brightgreen.svg)](https://www.mongodb.com/)
+[![Database](https://img.shields.io/badge/Database-MongoDB%20Atlas-forestgreen.svg)](https://www.mongodb.com/atlas)
 [![Frontend](https://img.shields.io/badge/Frontend-React%2018%20%2B%20Vite%20%2B%20TailwindCSS-blue.svg)](https://react.dev/)
 [![License](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
+
+> 🚀 **Live Deployment**: [https://casualfunnel-two.vercel.app/](https://casualfunnel-two.vercel.app/)  
+> 📡 **Tracker Script Endpoint**: [https://casualfunnel-two.vercel.app/tracker.js](https://casualfunnel-two.vercel.app/tracker.js)
 
 An enterprise-grade, full-stack user session tracking and behavioral analytics platform built for the **CausalFunnel** Full Stack Engineer selection assignment. The system tracks client interactions (`page_view`, `click`, viewport coordinates, element DOM selectors), normalizes telemetry across devices, and delivers an interactive dashboard featuring **User Journey Playback**, **Canvas Thermal Heatmaps**, and **E-Commerce Conversion Funnel Analytics**.
 
