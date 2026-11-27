@@ -213,20 +213,8 @@ const newSessionId = window.CausalTracker.resetSession();
 
 ## 🌐 Cloud Deployment Guide
 
-### Option 1: Full-Stack Vercel Deployment (Monorepo)
-The repository is pre-configured with `vercel.json` and `/api/index.js` to deploy both the React frontend and Node.js Express backend together on Vercel:
-
-1. Import your GitHub repository (`ayush200545/CasualFunnel`) into [Vercel](https://vercel.com).
-2. Set the Environment Variable:
-   - `MONGODB_URI`: Your free [MongoDB Atlas](https://www.mongodb.com/atlas) connection string (e.g. `mongodb+srv://<user>:<password>@cluster0.mongodb.net/causalfunnel?retryWrites=true&w=majority`).
-3. Click **Deploy**. Vercel will:
-   - Build and host the React dashboard at `https://your-app.vercel.app`.
-   - Host the Express API serverless functions under `/api/*`.
-   - Serve the tracking script at `/tracker.js`.
-
-### Option 2: Render / Railway Backend + Vercel Frontend
-- **Backend**: Connect repo to [Render](https://render.com) or [Railway](https://railway.app), set Root Directory to `backend`, Build command `npm install`, Start command `npm start`. Set `MONGODB_URI`.
-- **Frontend**: Connect repo to Vercel, set Root Directory to `frontend`, Build command `npm run build`, Output directory `dist`. Add environment variable `VITE_API_URL=https://your-backend.onrender.com`.
+- **Frontend**: Can be deployed to [Vercel](https://vercel.com) or [Netlify](https://netlify.com) with root directory set to `frontend` and environment variable `VITE_API_URL=<backend-url>`.
+- **Backend**: Can be deployed to [Render](https://render.com), [Railway](https://railway.app), or [Fly.io] using the included `backend/Dockerfile` and `MONGODB_URI` from [MongoDB Atlas](https://www.mongodb.com/atlas).
 
 ---
 

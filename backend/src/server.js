@@ -15,7 +15,7 @@ const funnelRouter = require('./routes/funnel');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Enable CORS for all origins so tracker can submit from demo pages / external origins
+// Enable CORS for all origins
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'OPTIONS'],
@@ -38,16 +38,17 @@ app.use((req, res, next) => {
   next();
 });
 
-// Ensure database connection is active on every request (essential for Vercel serverless)
+// Database connection middleware for Serverless invocations (Vercel)
 app.use(async (req, res, next) => {
   try {
     await connectDB();
     next();
   } catch (err) {
+    console.error('[DB Middleware Error]', err.message);
     if (req.path.startsWith('/api')) {
       return res.status(503).json({
         error: 'Database connection failed',
-        message: 'Could not connect to MongoDB. If deploying on Vercel, please set MONGODB_URI in your Vercel project environment variables.'
+        message: err.message
       });
     }
     next();
@@ -88,16 +89,15 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal Server Error', message: err.message });
 });
 
-// Start server
+// Start standalone server (for local dev)
 async function startServer() {
   await connectDB();
 
-  // If database is completely empty on startup, populate sample sessions so evaluators can inspect immediately
+  // If database is completely empty on startup, populate sample sessions
   try {
     const existingCount = await Event.countDocuments();
     if (existingCount === 0) {
       console.log('[Server] Database is empty. Seeding initial demo sessions & heatmap data...');
-      // generate initial mock data without closing DB
       const sampleSessions = [
         'sess_cf9a128e-4a81-42cb-b1b7-90c742398a01',
         'sess_df8b239f-5b92-43dc-c2c8-01d853409b02',
@@ -114,7 +114,7 @@ async function startServer() {
       const baseTime = Date.now() - 3600000;
       sampleSessions.forEach((sessId, sIdx) => {
         let t = baseTime + sIdx * 600000;
-        PAGES.forEach((pg, pIdx) => {
+        PAGES.forEach((pg) => {
           initialEvents.push({
             sessionId: sessId,
             eventType: 'page_view',
@@ -145,7 +145,7 @@ async function startServer() {
       console.log(`[Server] Pre-seeded ${initialEvents.length} events across ${sampleSessions.length} demo sessions.`);
     }
   } catch (seedErr) {
-    console.warn('[Server] Auto-seed check notice:', seedErr.message);
+    console.warn('[Server] Auto-seed notice:', seedErr.message);
   }
 
   app.listen(PORT, () => {
@@ -158,8 +158,14 @@ async function startServer() {
   });
 }
 
-if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
+// Only listen if executed directly (e.g., node src/server.js), never when imported by tests or Vercel
+if (require.main === module) {
   startServer();
 }
 
-module.exports = { app, startServer, connectDB };
+// Attach helpers to app so both `module.exports = app` and `const { app } = require(...)` work!
+app.app = app;
+app.startServer = startServer;
+app.connectDB = connectDB;
+
+module.exports = app;

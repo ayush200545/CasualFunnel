@@ -17,15 +17,14 @@ async function connectDB() {
   
   try {
     const conn = await mongoose.connect(uri, {
-      serverSelectionTimeoutMS: process.env.VERCEL ? 8000 : 3000,
-      bufferCommands: false, // Recommended for serverless
+      serverSelectionTimeoutMS: 5000,
     });
     cachedConnection = conn;
-    console.log(`[MongoDB] Connected to database at: ${uri.replace(/:([^:@]+)@/, ':****@')}`);
+    console.log('[MongoDB] Connected to database successfully');
     return conn;
   } catch (err) {
-    if (process.env.VERCEL) {
-      console.error('[MongoDB Error] Vercel Serverless environment detected. Please configure MONGODB_URI in your Vercel Environment Variables:', err.message);
+    if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+      console.error('[MongoDB Error on Vercel]:', err.message);
       throw err;
     }
 
