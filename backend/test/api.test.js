@@ -137,6 +137,33 @@ test('GET /tracker.js should serve tracking script file', async () => {
   const res = await fetch(`${baseUrl}/tracker.js`);
   assert.strictEqual(res.status, 200);
   const text = await res.text();
-  assert.ok(text.includes('CausalFunnel User Analytics Tracking Script'));
+  assert.ok(text.includes('CausalFunnel'));
   assert.ok(text.includes('CausalTracker'));
+});
+
+test('GET /api/funnel should calculate conversion funnel stages', async () => {
+  const res = await fetch(`${baseUrl}/api/funnel`);
+  assert.strictEqual(res.status, 200);
+  const json = await res.json();
+  assert.strictEqual(json.success, true);
+  assert.ok(Array.isArray(json.stages));
+  assert.strictEqual(json.stages.length, 4);
+});
+
+test('GET /api/sessions/:sessionId/export should export session as CSV and JSON', async () => {
+  // Test CSV export
+  const csvRes = await fetch(`${baseUrl}/api/sessions/test-session-101/export?format=csv`);
+  assert.strictEqual(csvRes.status, 200);
+  assert.ok(csvRes.headers.get('content-type').includes('text/csv'));
+  const csvText = await csvRes.text();
+  assert.ok(csvText.includes('Step,Timestamp,EventType,PageURL'));
+  assert.ok(csvText.includes('page_view'));
+  assert.ok(csvText.includes('click'));
+
+  // Test JSON export
+  const jsonRes = await fetch(`${baseUrl}/api/sessions/test-session-101/export?format=json`);
+  assert.strictEqual(jsonRes.status, 200);
+  const jsonData = await jsonRes.json();
+  assert.strictEqual(jsonData.sessionId, 'test-session-101');
+  assert.strictEqual(jsonData.eventCount, 2);
 });

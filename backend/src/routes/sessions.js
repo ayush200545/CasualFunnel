@@ -157,4 +157,58 @@ router.get('/:sessionId/events', async (req, res) => {
   }
 });
 
+/**
+ * GET /api/sessions/:sessionId/export
+ * Exports session events as CSV or JSON
+ * Query: ?format=csv|json
+ */
+router.get('/:sessionId/export', async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    const { format = 'json' } = req.query;
+
+    const events = await Event.find({ sessionId }).sort({ timestamp: 1 }).lean();
+
+    if (!events || events.length === 0) {
+      return res.status(404).json({ error: `No events found for session: ${sessionId}` });
+    }
+
+    if (format.toLowerCase() === 'csv') {
+      const headers = ['Step', 'Timestamp', 'EventType', 'PageURL', 'ClickX', 'ClickY', 'TargetTag', 'TargetText', 'Selector'];
+      const rows = events.map((e, idx) => {
+        const escape = (val) => (val == null ? '' : `"${String(val).replace(/"/g, '""')}"`);
+        return [
+          idx + 1,
+          e.timestamp ? new Date(e.timestamp).toISOString() : '',
+          escape(e.eventType),
+          escape(e.pageUrl),
+          e.clickX ?? '',
+          e.clickY ?? '',
+          escape(e.targetTag),
+          escape(e.targetText),
+          escape(e.metadata?.selector || '')
+        ].join(',');
+      });
+
+      const csvContent = [headers.join(','), ...rows].join('\r\n');
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="session-${sessionId}.csv"`);
+      return res.send(csvContent);
+    }
+
+    // Default JSON export
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename="session-${sessionId}.json"`);
+    return res.json({
+      sessionId,
+      exportedAt: new Date().toISOString(),
+      eventCount: events.length,
+      events,
+    });
+  } catch (err) {
+    console.error('[API /sessions/:sessionId/export] Error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

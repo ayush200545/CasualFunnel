@@ -1,5 +1,5 @@
 /**
- * API client to communicate with backend analytics endpoints
+ * Enhanced API client to communicate with backend analytics endpoints
  */
 const BASE_URL = import.meta.env.VITE_API_URL || '';
 
@@ -24,6 +24,12 @@ export const api = {
     return handleResponse(res);
   },
 
+  // Fetch e-commerce conversion funnel
+  getFunnel: async () => {
+    const res = await fetch(`${BASE_URL}/api/funnel`);
+    return handleResponse(res);
+  },
+
   // Fetch list of sessions
   getSessions: async (params = {}) => {
     const query = new URLSearchParams();
@@ -40,6 +46,11 @@ export const api = {
   getSessionEvents: async (sessionId) => {
     const res = await fetch(`${BASE_URL}/api/sessions/${encodeURIComponent(sessionId)}/events`);
     return handleResponse(res);
+  },
+
+  // Export session URL
+  getSessionExportUrl: (sessionId, format = 'csv') => {
+    return `${BASE_URL}/api/sessions/${encodeURIComponent(sessionId)}/export?format=${format}`;
   },
 
   // Fetch pages list for heatmap selector

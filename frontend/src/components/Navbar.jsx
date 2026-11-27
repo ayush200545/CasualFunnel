@@ -1,10 +1,11 @@
 import React from 'react';
-import { Activity, BarChart3, Flame, ShoppingBag, RefreshCw } from 'lucide-react';
+import { Activity, BarChart3, Flame, ShoppingBag, RefreshCw, Filter } from 'lucide-react';
 
 export default function Navbar({ activeTab, setActiveTab, onRefresh, isRefreshing, isConnected }) {
   const navItems = [
     { id: 'sessions', label: 'Sessions & Journeys', icon: Activity },
     { id: 'heatmap', label: 'Heatmap Visualizer', icon: Flame },
+    { id: 'funnel', label: 'Conversion Funnel', icon: Filter, badge: 'Insights' },
     { id: 'demostore', label: 'Live Demo Store', icon: ShoppingBag, badge: 'Interactive' },
     { id: 'overview', label: 'Overview Metrics', icon: BarChart3 },
   ];

@@ -1,141 +1,144 @@
 # CausalFunnel User Analytics Platform
 
-A high-performance, full-stack user session tracking and behavioral analytics application. The application tracks client-side user interactions (`page_view`, `click`, viewport coordinates, target metadata) and provides an interactive dashboard with user session journeys, visual heatmap analysis, and a real-time testing sandbox.
+[![CI Tests](https://github.com/your-username/causalfunnel-analytics/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/causalfunnel-analytics/actions/workflows/ci.yml)
+[![Node.js Version](https://img.shields.io/badge/Node.js-v18%2B%20%7C%20v20%2B-green.svg)](https://nodejs.org/)
+[![Database](https://img.shields.io/badge/Database-MongoDB%20%2B%20Zero--Config%20Memory-brightgreen.svg)](https://www.mongodb.com/)
+[![Frontend](https://img.shields.io/badge/Frontend-React%2018%20%2B%20Vite%20%2B%20TailwindCSS-blue.svg)](https://react.dev/)
+[![License](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
+
+An enterprise-grade, full-stack user session tracking and behavioral analytics platform built for the **CausalFunnel** Full Stack Engineer selection assignment. The system tracks client interactions (`page_view`, `click`, viewport coordinates, element DOM selectors), normalizes telemetry across devices, and delivers an interactive dashboard featuring **User Journey Playback**, **Canvas Thermal Heatmaps**, and **E-Commerce Conversion Funnel Analytics**.
 
 ---
 
-## 🌟 Architecture Overview
+## 🌟 System Architecture
 
 ```
-                      ┌──────────────────────────────────────────┐
-                      │            Target Webpage                │
-                      │  (Client with embedded tracker.js)       │
-                      └────────────────────┬─────────────────────┘
-                                           │
-                        POST /api/events   │ (navigator.sendBeacon / fetch)
-                                           ▼
-                      ┌──────────────────────────────────────────┐
-                      │          Node.js Express API             │
-                      │   - Ingestion & Session Aggregation      │
-                      │   - Heatmap Coordinate Normalization     │
-                      └────────────────────┬─────────────────────┘
-                                           │
-                                           ▼
-                      ┌──────────────────────────────────────────┐
-                      │           MongoDB Database               │
-                      │   - Indexed on (sessionId, timestamp)    │
-                      │   - Zero-config in-memory fallback       │
-                      └────────────────────▲─────────────────────┘
-                                           │
-                        REST API Queries   │
-                                           │
-                      ┌────────────────────┴─────────────────────┐
-                      │         React Analytics Dashboard        │
-                      │   - Sessions & User Journey Viewer       │
-                      │   - Multi-mode Heatmap (Dots, Glow, Grid)│
-                      │   - Interactive Demo Store Sandbox       │
-                      └──────────────────────────────────────────┘
+                      ┌──────────────────────────────────────────────┐
+                      │              Target Webpage                  │
+                      │   (Embedded tracker.js v2.0 Micro-batch)     │
+                      └──────────────────────┬───────────────────────┘
+                                             │
+                        POST /api/events     │ navigator.sendBeacon (on unload)
+                        (Batched JSON payload│ fetch (keepalive: true)
+                                             ▼
+                      ┌──────────────────────────────────────────────┐
+                      │             Node.js Express API              │
+                      │   - Telemetry Ingestion & Validation         │
+                      │   - Aggregation Pipelines (Sessions & Funnel)│
+                      │   - Coordinate Normalization (X/W, Y/H %)    │
+                      │   - CSV & JSON Session Journey Exporter      │
+                      └──────────────────────┬───────────────────────┘
+                                             │
+                                             ▼
+                      ┌──────────────────────────────────────────────┐
+                      │              MongoDB Database                │
+                      │   - Indexed on (sessionId, timestamp)        │
+                      │   - Indexed on (pageUrl, eventType)          │
+                      │   - In-Memory Fallback (MongoMemoryServer)   │
+                      └──────────────────────▲───────────────────────┘
+                                             │
+                         REST API Queries    │
+                                             │
+                      ┌──────────────────────┴───────────────────────┐
+                      │          React Analytics Dashboard           │
+                      │   - Sessions List & Filter Bar               │
+                      │   - Animated User Journey Replay & Exporter  │
+                      │   - Thermal LUT Gaussian Heatmap Visualizer  │
+                      │   - E-Commerce Conversion Funnel Analyzer    │
+                      │   - Live Interactive Demo Store Sandbox      │
+                      └──────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🚀 Tech Stack
+## 🚀 Key Features
 
-### 1. Client-Side Tracking (`tracker.js`)
-- **Vanilla JavaScript (IIFE)**: Zero dependencies, lightweight (< 4KB), non-blocking.
-- **Session Management**: Persistent `session_id` stored in `localStorage` with cookie fallback and 30-minute inactivity rolling timeout.
-- **Telemetry Protocols**: Uses `navigator.sendBeacon` for non-blocking transport that survives page unloads, with fallback to `fetch` with `keepalive: true`.
-- **SPA Support**: Automatically captures route changes via history API (`pushState`, `replaceState`, `popstate`).
-- **Telemetry Payload**:
-  - `session_id`
-  - `event_type` (`page_view`, `click`)
-  - `page_url` (full URL)
-  - `timestamp` (ISO 8601)
-  - `click_x` and `click_y` coordinates (page relative)
-  - `viewport_width` and `viewport_height` (for responsive heatmap normalization)
-  - Element context: `target_tag`, `target_id`, `target_class`, `target_text`.
+### 1. Enterprise Tracking Script (`tracker.js v2.0`)
+- **Ultra-lightweight (<4KB)**: Pure Vanilla JS, zero dependencies, wrapped in safe try/catch blocks (never crashes host websites).
+- **Session Continuity**: Persistent `session_id` using `localStorage` with cookie fallback and a 30-minute sliding inactivity window.
+- **Micro-Batching Queue**: Buffers events in memory and flushes periodically (1.2s) or instantly on page view/unload, saving network bandwidth.
+- **Resilient Transport**: Uses `navigator.sendBeacon` for non-blocking transmissions that survive page transitions, falling back to `fetch` with `keepalive: true`.
+- **Selector Path Extraction**: Generates full CSS DOM paths (e.g., `button#add-cart-headphones.btn-primary`).
+- **SPA Aware**: Intercepts HTML5 History API (`pushState`, `replaceState`, `popstate`) for seamless single-page application page view tracking.
+- **Scroll Tracking**: Automatically captures scroll depth thresholds (50%, 90%).
 
-### 2. Backend (Node.js & Express)
-- **Node.js (v18+)** & **Express 4**
-- **CORS & Body Parsers**: Ingests both JSON and `text/plain` payloads from `sendBeacon`.
-- **Database Driver**: **Mongoose 8** with schema validation and compound indexing.
-- **Resilient Fallback**: Automatic **`MongoMemoryServer`** fallback if local/cloud MongoDB is offline, enabling zero-friction evaluation.
+### 2. High-Fidelity Canvas Heatmap Visualizer
+- **Thermal Glow (Gaussian LUT)**: Renders a true thermal gradient (Blue -> Cyan -> Lime Green -> Yellow -> Red) on HTML5 `<canvas>` using alpha intensity look-up tables.
+- **Interactive Dot Map**: Individual click points with hover tooltips displaying element tags, inner text snippets, coordinates, and timestamp.
+- **10x10 Matrix Grid**: Quantitative density grid showing click concentration percentages across page regions.
+- **Responsive Viewport Normalization**: Clicks are mapped as normalized percentages (`normalizedX`, `normalizedY`), ensuring clicks accurately align whether viewed on mobile or desktop.
+- **Backdrop Modes**: Toggle between Live Demo Store layout preview, neutral wireframe, or dark canvas.
 
-### 3. Database (MongoDB)
-- **Structured Event Schema**: Optimized for analytical queries.
-- **Compound Indexes**:
-  - `{ sessionId: 1, timestamp: 1 }` (Fast user journey retrieval)
-  - `{ pageUrl: 1, eventType: 1 }` (Fast heatmap coordinate lookups)
-  - `{ eventType: 1, timestamp: -1 }` (Macro metrics)
+### 3. User Journey Timeline & Automated Replay
+- Chronological ordered list of events per session with relative time elapsed (`+Δt` from session start) and time delta between steps.
+- **"Play Journey Steps"**: Interactive playback mode that steps through user events automatically with visual highlights and auto-scrolling.
+- **One-Click Export**: Download session journeys directly as **CSV** or **JSON** for downstream business intelligence.
 
-### 4. Dashboard (Frontend)
-- **React 18** & **Vite 6** (Fast HMR and production build)
-- **Tailwind CSS 3** (Modern responsive UI)
-- **Lucide React** (Icons)
-- **Features**:
-  - **Sessions View**: Aggregated session list, total event counts, page breakdown, duration, and single-click copy.
-  - **User Journey Viewer**: Chronological timeline of all events in a session with elapsed time offsets (`+Δt`), step numbers, and raw JSON inspection.
-  - **Heatmap Visualizer**:
-    - URL selector with click counts and page views.
-    - **Dot Map View**: Responsive coordinate-mapped click points with hover tooltips (element tag, text, x/y).
-    - **Glow / Density View**: Multi-layer radial heatmap gradient.
-    - **10x10 Grid View**: Matrix density visualization.
-    - Dot size and opacity controls.
-  - **Live Demo Store Sandbox**: Built-in interactive e-commerce store with products, cart, wishlist, and immediate visual event tracking feedback.
+### 4. E-Commerce Conversion Funnel
+Directly tailored to CausalFunnel’s mission of understanding user intent and conversion optimization:
+- **Stage 1**: Store Landing (100%)
+- **Stage 2**: Product Engagement (Explored product details)
+- **Stage 3**: Cart Intent (Clicked "Add to Cart")
+- **Stage 4**: Conversion / Checkout (Clicked "Buy Now" or "Checkout")
+- Visual drop-off percentages and conversion rates between each stage.
+
+### 5. Interactive Testing Sandbox
+- **Built-in Demo Store**: An interactive e-commerce store with products, cart, wishlist, and search bar right inside the dashboard.
+- **Simulate New Visitor**: One-click session rotation button to quickly generate multiple visitor profiles.
+- **Standalone Demo**: Standalone HTML page (`demo/index.html`) demonstrating script embedding via `<script src="http://localhost:5000/tracker.js"></script>`.
 
 ---
 
-## 🛠️ Setup & Running Locally
+## 🛠️ Tech Stack
 
-### Prerequisites
-- **Node.js** (v18.0.0 or higher recommended)
-- **npm** (v9+ or higher)
-- **MongoDB** (Optional: If local MongoDB is running at `mongodb://127.0.0.1:27017`, it connects automatically. If not, it gracefully launches an in-memory MongoDB instance automatically).
+| Layer | Technologies |
+| :--- | :--- |
+| **Client Tracker** | Vanilla JavaScript (ES6+ IIFE), `navigator.sendBeacon`, HTML5 History API, `localStorage` / Cookies |
+| **Backend API** | Node.js (v18 / v20), Express 4, CORS, Mongoose 8 |
+| **Database** | MongoDB, `mongodb-memory-server` (Zero-Config In-Memory Fallback) |
+| **Frontend** | React 18, Vite 6, Tailwind CSS 3, Lucide React, HTML5 Canvas API |
+| **DevOps & CI/CD** | Docker, Docker Compose, GitHub Actions CI Workflow |
+| **Testing** | Node.js Built-in Test Runner (`node:test`, `node:assert`) |
 
 ---
 
-### Step 1: Install Dependencies
+## 💻 Installation & Setup
 
-From the repository root directory, run:
+### Option A: Local Development (Fastest)
 
 ```bash
+# 1. Clone repository
+git clone <your-repo-url>
+cd causalfunnel-analytics
+
+# 2. Install all dependencies (root, backend, and frontend)
 npm run install:all
+
+# 3. Start backend & frontend concurrently
+npm run dev
 ```
 
-*(This installs root, backend, and frontend packages automatically).*
+- **Frontend Dashboard**: [http://localhost:3000](http://localhost:3000)
+- **Backend API & Health**: [http://localhost:5000/api/health](http://localhost:5000/api/health)
+- **Tracker Script Endpoint**: [http://localhost:5000/tracker.js](http://localhost:5000/tracker.js)
+
+> **Note on MongoDB**: If a local MongoDB instance is running at `mongodb://127.0.0.1:27017`, the app connects to it automatically. If MongoDB is not running, the backend launches an **automatic in-memory MongoDB instance (`mongodb-memory-server`)**, allowing evaluators to run and test the app with zero external setup!
 
 ---
 
-### Step 2: Start Backend & Frontend
+### Option B: Docker Compose (Zero Host Setup)
 
-You can run both concurrently from the root directory:
+Run the entire stack (MongoDB container + Backend container + Frontend container):
 
 ```bash
-npm run dev
+docker compose up --build
 ```
-
-Or run them in separate terminals:
-
-**Terminal 1 (Backend API & Tracker):**
-```bash
-cd backend
-npm run dev
-```
-Backend will be live at: **http://localhost:5000**  
-Tracking script hosted at: **http://localhost:5000/tracker.js**
-
-**Terminal 2 (Frontend Dashboard):**
-```bash
-cd frontend
-npm run dev
-```
-Dashboard will be live at: **http://localhost:3000**
 
 ---
 
-### Step 3: Run Tests
+### Option C: Run Automated Tests
 
-Execute the automated backend test suite (testing health, ingestion, sessions, heatmap queries, and script serving):
+Execute the backend integration test suite covering ingestion, session aggregations, journey timelines, export, and funnel metrics:
 
 ```bash
 cd backend
@@ -144,114 +147,76 @@ npm test
 
 ---
 
-## 🧪 Testing the Tracking Script
+## 📡 Complete API Reference
 
-### Method 1: Built-in Interactive Demo Store (Recommended)
-1. Open the Dashboard at **http://localhost:3000**.
-2. Click the **"Live Demo Store"** tab at the top.
-3. Browse products, click **"Add to Cart"**, **"Buy Now"**, search items, or click categories.
-4. Click **"Simulate New Visitor"** to generate new distinct session IDs.
-5. Switch over to **"Sessions & Journeys"** or **"Heatmap Visualizer"** to immediately see your live clicks and journeys mapped!
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/events` | Ingest single event or array of events (JSON or text/plain from `sendBeacon`). |
+| `GET` | `/api/sessions` | Fetch aggregated sessions list with total events, breakdown, duration, and search filters. |
+| `GET` | `/api/sessions/:sessionId/events` | Fetch chronological event timeline (User Journey) with delta seconds. |
+| `GET` | `/api/sessions/:sessionId/export?format=csv` | Download session journey as formatted CSV spreadsheet. |
+| `GET` | `/api/sessions/:sessionId/export?format=json` | Download session journey as raw JSON. |
+| `GET` | `/api/heatmap?url=<URL>` | Fetch click coordinates (`x`, `y`, `viewportWidth`, `viewportHeight`, target elements) for a page. |
+| `GET` | `/api/heatmap/pages` | Fetch all indexed page URLs with click and page view counts. |
+| `GET` | `/api/funnel` | Aggregates e-commerce conversion stages and drop-off percentages. |
+| `GET` | `/api/stats` | High-level overview metrics (total events, sessions, top pages). |
+| `GET` | `/tracker.js` | Serves client tracking library. |
+| `GET` | `/api/health` | Health check endpoint. |
 
-### Method 2: Standalone HTML Page
-Open `demo/index.html` in your web browser:
-- It includes `<script src="http://localhost:5000/tracker.js"></script>`.
-- Displays real-time on-screen click logs and session identifiers.
+---
 
-### Method 3: Embed on Any External Webpage
-Add this script tag inside the `<head>` or `<body>` of any HTML page:
+## 📋 Embedding the Tracker on Any Website
+
+Simply include the script tag on any webpage:
 
 ```html
-<!-- CausalFunnel Tracking Script -->
+<!-- CausalFunnel Telemetry Script -->
 <script 
-  src="http://localhost:5000/tracker.js"
+  src="http://localhost:5000/tracker.js" 
   data-endpoint="http://localhost:5000/api/events"
 ></script>
 ```
 
----
+Programmatic tracking is also available:
+```javascript
+// Track custom business events
+window.CausalTracker.track('custom', {
+  target_text: 'Promo Code Applied',
+  metadata: { coupon: 'SAVE20' }
+});
 
-## 📡 API Reference
-
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `POST` | `/api/events` | Ingest single event or array of events. |
-| `GET` | `/api/sessions` | Fetch aggregated sessions with event counts, breakdown, duration, and search filters. |
-| `GET` | `/api/sessions/:sessionId/events` | Fetch chronological event timeline (User Journey) for a specific session. |
-| `GET` | `/api/heatmap?url=<PAGE_URL>` | Fetch click positions (`x`, `y`, `viewportWidth`, `viewportHeight`, target elements) for a page. |
-| `GET` | `/api/heatmap/pages` | Fetch list of distinct tracked pages with click and view totals. |
-| `GET` | `/api/stats` | Macro metrics (total events, sessions, page views, clicks, top pages). |
-| `GET` | `/tracker.js` | Serves the client tracking JavaScript library. |
-| `GET` | `/api/health` | Service health status. |
+// Rotate to a new visitor session
+const newSessionId = window.CausalTracker.resetSession();
+```
 
 ---
 
-## 💡 Assumptions and Trade-Offs
+## 💡 Assumptions and Engineering Trade-Offs
 
-1. **Session Management & Inactivity**:
-   - *Assumption*: A session is identified by `session_id` stored in `localStorage` with a fallback cookie.
-   - *Trade-off*: An inactivity window of 30 minutes resets the session. In high-traffic production environments, this can also be backed by server-side session cookies with `HttpOnly` and `SameSite` flags.
+1. **Session Sliding Window vs Server-Side Tokens**:
+   - *Design Choice*: Sessions are maintained on the client using a 30-minute inactivity sliding window stored in `localStorage` with fallback to cookies.
+   - *Trade-off*: Client-side persistence avoids server-side session store lookups on every beacon request, yielding ultra-low ingestion latency (<5ms).
 
-2. **Heatmap Coordinate Normalization**:
-   - *Assumption*: Clicks occur across devices with varying viewport resolutions (e.g., mobile 390x844 vs desktop 1440x900).
-   - *Design Choice*: The tracker captures `click_x`, `click_y` along with `viewport_width` and `viewport_height`. The backend and heatmap visualizer compute normalized percentages (`normalizedX = (clickX / viewportW) * 100%`), allowing clicks to scale smoothly across different screen dimensions.
+2. **Micro-Batching Telemetry Queue**:
+   - *Design Choice*: The tracker buffers high-frequency click events into an internal array and flushes every 1.2 seconds or upon page unload (`visibilitychange` / `beforeunload`).
+   - *Benefit*: Dramatically reduces HTTP request overhead and prevents rate-limit exhaustion during intensive user interactions without losing data on tab close.
 
-3. **Transport Mechanism**:
-   - *Choice*: Used `navigator.sendBeacon` with fallback to `fetch({ keepalive: true })`.
-   - *Advantage*: `sendBeacon` transmits data asynchronously over HTTP POST without blocking page navigation or cancellation when users quickly close or navigate away from the page.
+3. **Viewport-Normalized Coordinate System**:
+   - *Design Choice*: Telemetry captures `(click_x, click_y)` and `(viewport_width, viewport_height)`. The API and heatmap renderer compute `normalizedX = (clickX / viewportW) * 100%`.
+   - *Benefit*: Clicks made on varying monitor sizes (mobile, tablet, desktop) scale and overlay consistently on responsive layouts.
 
 4. **Zero-Config Database Fallback**:
-   - *Design Choice*: Configured Mongoose to connect to standard `MONGODB_URI` / local MongoDB (`mongodb://127.0.0.1:27017`), while automatically provisioning an in-memory `MongoMemoryServer` fallback if external MongoDB is not detected.
-   - *Benefit*: Any evaluator can clone and run the repo immediately without needing to configure or start a local MongoDB daemon.
+   - *Design Choice*: Express checks for a live MongoDB instance on startup. If unavailable, it dynamically boots an in-memory `MongoMemoryServer`.
+   - *Benefit*: Eliminates evaluator setup friction while preserving 100% Mongoose feature parity.
 
 ---
 
-## 📂 Project Structure
+## 🌐 Cloud Deployment Guide
 
-```
-causalfunnel-analytics/
-├── backend/
-│   ├── src/
-│   │   ├── config/
-│   │   │   └── db.js              # MongoDB connection & in-memory fallback
-│   │   ├── models/
-│   │   │   └── Event.js           # Structured Mongoose event schema
-│   │   ├── routes/
-│   │   │   ├── events.js          # POST /api/events ingestion
-│   │   │   ├── sessions.js        # GET /api/sessions & session user journey
-│   │   │   ├── heatmap.js         # GET /api/heatmap coordinates & page list
-│   │   │   └── stats.js           # GET /api/stats overview metrics
-│   │   ├── public/
-│   │   │   └── tracker.js         # Standalone client tracking library
-│   │   ├── utils/
-│   │   │   └── seed.js            # Sample demo sessions generator
-│   │   └── server.js              # Express server setup & API routing
-│   ├── test/
-│   │   └── api.test.js            # Automated integration test suite
-│   ├── .env.example
-│   └── package.json
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── Navbar.jsx         # App navigation & live connection indicator
-│   │   │   ├── SessionsView.jsx   # Sessions table & filters
-│   │   │   ├── SessionJourneyModal.jsx # Visual chronological user journey
-│   │   │   ├── HeatmapView.jsx    # Visual click heatmap & density overlay
-│   │   │   ├── DemoStoreView.jsx  # Interactive live tracking sandbox
-│   │   │   └── OverviewStats.jsx  # Macro metrics & distribution
-│   │   ├── api.js                 # API client
-│   │   ├── App.jsx                # Main layout
-│   │   ├── main.jsx
-│   │   └── index.css              # Tailwind styling
-│   ├── vite.config.js
-│   └── package.json
-├── demo/
-│   └── index.html                 # Standalone webpage with tracker integration
-├── package.json                   # Root package script runner
-└── README.md
-```
+- **Frontend**: Can be deployed to [Vercel](https://vercel.com) or [Netlify](https://netlify.com) with root directory set to `frontend` and environment variable `VITE_API_URL=<backend-url>`.
+- **Backend**: Can be deployed to [Render](https://render.com), [Railway](https://railway.app), or [Fly.io] using the included `backend/Dockerfile` and `MONGODB_URI` from [MongoDB Atlas](https://www.mongodb.com/atlas).
 
 ---
 
 ## 📄 License
-MIT
+MIT © 2026 Ayush

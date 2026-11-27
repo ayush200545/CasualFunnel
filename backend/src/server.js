@@ -10,6 +10,7 @@ const eventsRouter = require('./routes/events');
 const sessionsRouter = require('./routes/sessions');
 const heatmapRouter = require('./routes/heatmap');
 const statsRouter = require('./routes/stats');
+const funnelRouter = require('./routes/funnel');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -48,6 +49,7 @@ app.use('/api/events', eventsRouter);
 app.use('/api/sessions', sessionsRouter);
 app.use('/api/heatmap', heatmapRouter);
 app.use('/api/stats', statsRouter);
+app.use('/api/funnel', funnelRouter);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import SessionsView from './components/SessionsView';
 import HeatmapView from './components/HeatmapView';
+import FunnelView from './components/FunnelView';
 import DemoStoreView from './components/DemoStoreView';
 import OverviewStats from './components/OverviewStats';
 import { api } from './api';
@@ -64,6 +65,13 @@ export default function App() {
         {activeTab === 'heatmap' && (
           <HeatmapView
             key={`heatmap-${refreshKey}`}
+            onOpenDemo={() => setActiveTab('demostore')}
+          />
+        )}
+
+        {activeTab === 'funnel' && (
+          <FunnelView
+            key={`funnel-${refreshKey}`}
             onOpenDemo={() => setActiveTab('demostore')}
           />
         )}
