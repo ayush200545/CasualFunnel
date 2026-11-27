@@ -38,6 +38,22 @@ app.use((req, res, next) => {
   next();
 });
 
+// Ensure database connection is active on every request (essential for Vercel serverless)
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    if (req.path.startsWith('/api')) {
+      return res.status(503).json({
+        error: 'Database connection failed',
+        message: 'Could not connect to MongoDB. If deploying on Vercel, please set MONGODB_URI in your Vercel project environment variables.'
+      });
+    }
+    next();
+  }
+});
+
 // Serve tracker.js publicly at /tracker.js as well as /public/tracker.js
 app.use('/tracker.js', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'tracker.js'));
@@ -142,8 +158,8 @@ async function startServer() {
   });
 }
 
-if (process.env.NODE_ENV !== 'test') {
+if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
   startServer();
 }
 
-module.exports = { app, startServer };
+module.exports = { app, startServer, connectDB };
